@@ -5,12 +5,12 @@
 
 body {
   height: 100vh;
-  background: linear-gradient(
+  /* background: linear-gradient(
     to bottom right,
     #274b74 0%,
     #8233c5 50%,
     #e963fd 100%
-  );
+  ); */
 }
 
 /* Small devices (landscape phones, 576px and up) */

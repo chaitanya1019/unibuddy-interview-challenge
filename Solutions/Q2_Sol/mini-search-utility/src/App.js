@@ -1,13 +1,13 @@
 import React from 'react';
 import logo from './logo.svg';
 import './App.css';
-import SearchInput from './components/SearchInput';
+import AutoComplete from './components/AutoComplete';
 
 function App() {
   return (
     <div className="container">
       <div className="App">
-        <SearchInput />
+        <AutoComplete />
       </div>
     </div>
   );
