@@ -1,3 +1,5 @@
+@import url('https://fonts.googleapis.com/css2?family=Roboto&display=swap');
+
 .App {
   text-align: center;
   margin: auto;
@@ -5,31 +7,82 @@
 
 body {
   height: 100vh;
-  /* background: linear-gradient(
-    to bottom right,
-    #274b74 0%,
-    #8233c5 50%,
-    #e963fd 100%
-  ); */
+  font-family: 'Roboto', sans-serif;
+}
+
+.wrap {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  margin-top: 16px;
+  /* width: 50%; */
+}
+
+.searchBox {
+  width: 50%;
+}
+
+.search {
+  display: flex;
+}
+
+.searchTextBox {
+  width: 100%;
+  border: 3px solid #00b4cc;
+  border-right: none;
+  padding: 5px;
+  height: 30px;
+  border-radius: 24px 0 0 24px;
+  outline: none;
+  color: #9dbfaf;
+  font-family: 'Roboto', sans-serif;
+  font-size: 22px;
+}
+
+.searchTextBox.with-suggestions {
+  border-radius: 24px 0 0 0px;
+}
+
+.addButton.with-suggestions {
+  border-radius: 0 24px 0 0;
+}
+
+.searchTextBox:focus {
+  color: #00b4cc;
+}
+
+.addButton {
+  height: 46px;
+  font-family: 'Roboto', sans-serif;
+  border: 1px solid #00b4cc;
+  background: #00b4cc;
+  text-align: center;
+  color: #fff;
+  border-radius: 0 24px 24px 0;
+  cursor: pointer;
+  font-size: 22px;
+}
+
+div.suggestions {
+  width: 50%;
+  border-top: none;
+  border-left: 3px solid #00b4cc;
+  border-bottom: 3px solid #00b4cc;
+  border-right: 3px solid #00b4cc;
+  box-sizing: border-box;
 }
 
 ul.suggestions {
-  display: block;
   list-style: none;
-  width: 30rem;
   transition: width 0.3s;
-  margin: auto;
-  position: relative;
+  padding: 0;
 }
 
 ul.suggestions li {
-  display: block;
   background: white;
-  margin: 10px auto;
-  padding: 10px;
+  padding: 5px;
   font-size: 1.2rem;
-  width: 100%;
-  border-radius: 2px;
 }
 ul.suggestions li:hover {
   font-weight: bold;

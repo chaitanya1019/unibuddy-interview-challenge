@@ -5,7 +5,9 @@ function SelectedBooks(props) {
   return (
     <div>
       {books.map(book => (
-        <div style={{ width: 200, height: 100, border: '1px solid' }}>
+        <div
+          key={book.id}
+          style={{ width: 200, height: 100, border: '1px solid' }}>
           <p>{book.title}</p>
         </div>
       ))}

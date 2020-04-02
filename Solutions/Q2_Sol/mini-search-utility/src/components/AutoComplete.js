@@ -12,13 +12,16 @@ function AutoComplete(props) {
 
   const handleSubmit = e => {
     e.preventDefault();
+
     console.log('submit triggered');
-    setSelectedBooks([...selectedBooks, selectedSuggestion]);
-    setSearchTxt('');
-    setActiveSuggestion(0);
-    setShowSuggestions(false);
-    setSelectedSuggestion({});
-    setSuggestions([]);
+    if (searchTxt.trim().length) {
+      setSelectedBooks([...selectedBooks, selectedSuggestion]);
+      setSearchTxt('');
+      setActiveSuggestion(0);
+      setShowSuggestions(false);
+      setSelectedSuggestion({});
+      setSuggestions([]);
+    }
   };
 
   const onChange = e => {
@@ -67,39 +70,61 @@ function AutoComplete(props) {
 
   return (
     <Fragment>
-      <form onSubmit={handleSubmit}>
-        <input
-          type="text"
-          onChange={onChange}
-          onKeyDown={onKeyDown}
-          value={searchTxt}
-          placeholder="Search"
-        />
+      <div className="wrap">
+        <div className="searchBox">
+          <form onSubmit={handleSubmit}>
+            <div className="search">
+              <input
+                type="text"
+                className={
+                  !showSuggestions
+                    ? 'searchTextBox'
+                    : 'searchTextBox with-suggestions'
+                }
+                onChange={onChange}
+                onKeyDown={onKeyDown}
+                value={searchTxt}
+                placeholder="Search"
+              />
 
-        <input type="submit" value="Add" />
-      </form>
-      <br />
-      {showSuggestions && searchTxt && (
-        <div style={{ border: '1px solid' }}>
-          {suggestions.length ? (
-            <ul className="suggestions">
-              {suggestions.map((suggestion, index) => {
-                return (
-                  <li
-                    className={index === activeSuggestion ? 'active' : null}
-                    key={suggestion.id}
-                    onClick={e => handleSuggestionClick(suggestion, e)}>
-                    {suggestion.title}
-                  </li>
-                );
-              })}
-            </ul>
-          ) : (
-            <div className="no-suggestions">No suggestions!!</div>
-          )}
+              <input
+                type="submit"
+                value="Add"
+                className={
+                  !showSuggestions ? 'addButton' : 'addButton with-suggestions'
+                }
+              />
+            </div>
+          </form>
         </div>
+
+        {showSuggestions && searchTxt && (
+          <div className="suggestions">
+            {suggestions.length ? (
+              <ul className="suggestions">
+                {suggestions.map((suggestion, index) => {
+                  return (
+                    <li
+                      className={index === activeSuggestion ? 'active' : null}
+                      key={suggestion.id}
+                      onClick={e => handleSuggestionClick(suggestion, e)}>
+                      {suggestion.title}
+                    </li>
+                  );
+                })}
+              </ul>
+            ) : (
+              <div className="no-suggestions">No suggestions!!</div>
+            )}
+          </div>
+        )}
+      </div>
+
+      {selectedBooks.length > 0 ? (
+        <SelectedBooks books={selectedBooks} />
+      ) : (
+        <p>No Books Selected</p>
       )}
-      {selectedBooks.length > 0 && <SelectedBooks books={selectedBooks} />}
     </Fragment>
   );
 }
