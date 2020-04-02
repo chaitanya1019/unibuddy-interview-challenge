@@ -30,7 +30,7 @@ function AutoComplete(props) {
         <input type="submit" value="Add" />
       </form>
       <br />
-      <SuggestionsList suggestions={suggestions} />
+      {searchTxt && <SuggestionsList suggestions={suggestions} />}
     </Fragment>
   );
 }
