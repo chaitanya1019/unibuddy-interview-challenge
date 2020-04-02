@@ -13,6 +13,40 @@ body {
   ); */
 }
 
+ul.suggestions {
+  display: block;
+  list-style: none;
+  width: 30rem;
+  transition: width 0.3s;
+  margin: auto;
+  position: relative;
+}
+
+ul.suggestions li {
+  display: block;
+  background: white;
+  margin: 10px auto;
+  padding: 10px;
+  font-size: 1.2rem;
+  width: 100%;
+  border-radius: 2px;
+}
+ul.suggestions li:hover {
+  font-weight: bold;
+  color: #00b4cc;
+  cursor: pointer;
+  transition: 0.3s all;
+}
+
+ul.suggestions li.active {
+  background: whitesmoke;
+  font-size: 1.5rem;
+  color: #00b4cc;
+}
+.no-options {
+  color: white;
+}
+
 /* Small devices (landscape phones, 576px and up) */
 @media (min-width: 576px) {
   .container {
