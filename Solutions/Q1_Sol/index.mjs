@@ -9,6 +9,8 @@ let cacheData = readFileSync('./cache.json');
 let cacheWords;
 
 let allSummaries = jsonData.summaries;
+let allTitles = jsonData.titles;
+let allAuthors = jsonData.authors;
 
 if (cacheData.length != 0) cacheWords = JSON.parse(cacheData);
 else {
@@ -42,7 +44,7 @@ export const searchSummaries = (userQuery, numberOfResults) => {
 
     calculateInstancesOfQuerySubstringsInSummaries();
 
-    console.log(JSON.stringify(newArr));
+    console.log(JSON.stringify(newArr, null, 2));
   }
 };
 
@@ -135,7 +137,12 @@ const calculateInstancesOfQuerySubstringsInSummaries = () => {
         if (
           !newArr.some(summary => summary['id'] == value['instances'][j][k])
         ) {
-          newArr.push(allSummaries[value['instances'][j][k]]);
+          newArr.push({
+            id: allSummaries[value['instances'][j][k]]['id'],
+            summary: allSummaries[value['instances'][j][k]]['summary'],
+            title: allTitles[value['instances'][j][k]],
+            author: allAuthors[value['instances'][j][k]]['author']
+          });
         }
       }
     }
@@ -179,4 +186,4 @@ const getAllSubstringsFromUserQuery = userQuery => {
   }
 };
 
-searchSummaries('is your, problems', 3);
+searchSummaries('achieve', 3);
