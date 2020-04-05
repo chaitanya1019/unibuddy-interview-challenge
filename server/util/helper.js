@@ -1,38 +1,30 @@
-import { readFileSync, readFile, fstat, writeFile } from 'fs';
-import { preprocess, sortPreProcessedDataInstances } from './preprocess.mjs';
-// import cache from './cache.json';
+const fs = require('fs');
+const preprocessHelpers = require('./preprocess.js');
 
-let rawData = readFileSync('data.json');
+let rawData = fs.readFileSync(__dirname + '/data.json');
 let jsonData = JSON.parse(rawData);
 
-let cacheData = readFileSync('./cache.json');
+let cacheData = fs.readFileSync(__dirname + '/cache.json');
 let cacheWords;
+
+if (cacheData.length != 0) cacheWords = JSON.parse(cacheData);
+else {
+  console.log('calling preprocess fn to make cache list');
+  cacheWords = preprocessHelpers.preprocess();
+}
+
+console.log(cacheWords);
 
 let allSummaries = jsonData.summaries;
 let allTitles = jsonData.titles;
 let allAuthors = jsonData.authors;
 
-if (cacheData.length != 0) cacheWords = JSON.parse(cacheData);
-else {
-  console.log('calling preprocess fn to make cache list');
-  cacheWords = preprocess();
-}
-// console.log('cached words: ', cacheWords);
-let maxResults = 3;
+const trimAdditionalSpacesFromString = (str) => {
+  return str.trim();
+};
 
-let userQuerySubStrings = [];
-
-let cacheWordsInstances = {};
-
-let instancesOfStringsNotInCacheWords = {};
-
-let instancesOfStringsNotInCacheWordsSorted = {};
-
-let allSubstringsInstances = {};
-
-let newArr = [];
-
-export const searchSummaries = (userQuery, numberOfResults) => {
+const searchSummaries = (userQuery, numberOfResults) => {
+  console.log('in search summary fn', userQuery, numberOfResults);
   // check if query is emmpty or numberOfResults is less than or equal to zero
   if (userQuery === '' || numberOfResults <= 0) {
     // return empty data
@@ -40,31 +32,46 @@ export const searchSummaries = (userQuery, numberOfResults) => {
   } else {
     //load data from cache
     // extract all possible substrings from userQuery
-    getAllSubstringsFromUserQuery(userQuery);
+    let trimmedQuery = trimAdditionalSpacesFromString(userQuery);
 
-    calculateInstancesOfQuerySubstringsInSummaries();
+    let querySubstrings = getAllSubstringsFromUserQuery(trimmedQuery);
 
-    console.log(JSON.stringify(newArr, null, 2));
+    let output = calculateInstancesOfQuerySubstringsInSummaries(
+      querySubstrings,
+      numberOfResults
+    );
+    return output;
   }
 };
 
-const removeSpecialCharacters = str => {
+const removeSpecialCharacters = (str) => {
   return str.replace(/[^a-zA-Z ]/g, '');
 };
 
-const convertToLowercase = input => {
+const convertToLowercase = (input) => {
   return input.toLowerCase();
 };
 
 const range = (start, end) =>
   Array.from({ length: end - start }, (v, k) => k + start);
 
-const calculateInstancesOfQuerySubstringsInSummaries = () => {
-  userQuerySubStrings.forEach(str => {
+const calculateInstancesOfQuerySubstringsInSummaries = (
+  querySubstrings,
+  maxResults
+) => {
+  let searchResults = [];
+  let cacheWordsInstances = {};
+  let instancesOfStringsNotInCacheWords = {};
+
+  let instancesOfStringsNotInCacheWordsSorted = {};
+
+  let allSubstringsInstances = {};
+
+  querySubstrings.forEach((str) => {
     let lowercaseString = convertToLowercase(str);
     if (!cacheWords.hasOwnProperty(lowercaseString)) {
       let frequencyOfUserQuerySubstringInASummary;
-      allSummaries.forEach(summaryObj => {
+      allSummaries.forEach((summaryObj) => {
         let currStateOfUserQuerySubstringInstance = {};
         let totalFrequency, totalInstances;
 
@@ -92,7 +99,7 @@ const calculateInstancesOfQuerySubstringsInSummaries = () => {
           instances: currStateOfUserQuerySubstringInstance,
           totalFrequency,
           totalInstances,
-          rank: totalFrequency === 0 ? -1 : lowercaseString.split(' ').length
+          rank: totalFrequency === 0 ? -1 : lowercaseString.split(' ').length,
         };
       });
     } else {
@@ -101,13 +108,13 @@ const calculateInstancesOfQuerySubstringsInSummaries = () => {
   });
 
   if (Object.keys(instancesOfStringsNotInCacheWords).length) {
-    instancesOfStringsNotInCacheWordsSorted = sortPreProcessedDataInstances(
+    instancesOfStringsNotInCacheWordsSorted = preprocessHelpers.sortPreProcessedDataInstances(
       instancesOfStringsNotInCacheWords
     )['sorted_data'];
 
     allSubstringsInstances = {
       ...cacheWordsInstances,
-      ...instancesOfStringsNotInCacheWordsSorted
+      ...instancesOfStringsNotInCacheWordsSorted,
     };
   } else {
     allSubstringsInstances = { ...cacheWordsInstances };
@@ -117,7 +124,7 @@ const calculateInstancesOfQuerySubstringsInSummaries = () => {
     Object.entries(allSubstringsInstances)
   );
 
-  allSubstringsInstancesMap[Symbol.iterator] = function*() {
+  allSubstringsInstancesMap[Symbol.iterator] = function* () {
     yield* [...this.entries()].sort(
       (a, b) =>
         b[1].rank - a[1].rank ||
@@ -130,52 +137,59 @@ const calculateInstancesOfQuerySubstringsInSummaries = () => {
 
   for (let [key, value] of allSubstringsInstancesMap) {
     for (let j = 0; j < value['instances'].length; j++) {
-      if (newArr.length === maxResults) {
+      if (searchResults.length === maxResults) {
         break;
       }
       for (let k = 0; k < 1; k++) {
         if (
-          !newArr.some(summary => summary['id'] == value['instances'][j][k])
+          !searchResults.some(
+            (summary) => summary['id'] == value['instances'][j][k]
+          )
         ) {
-          newArr.push({
+          searchResults.push({
             id: allSummaries[value['instances'][j][k]]['id'],
             summary: allSummaries[value['instances'][j][k]]['summary'],
             title: allTitles[value['instances'][j][k]],
-            author: allAuthors[value['instances'][j][k]]['author']
+            author: allAuthors[value['instances'][j][k]]['author'],
           });
         }
       }
     }
   }
 
-  if (instancesOfStringsNotInCacheWords) {
+  console.log(instancesOfStringsNotInCacheWords);
+  if (!isEmptyObj(instancesOfStringsNotInCacheWords)) {
+    console.log('wrtiting data');
     //add unsaved data of instancesOfStringsNotInCacheWordsSorted to cache.json
-    writeFile(
-      'cache.json',
-      JSON.stringify(
-        Object.assign(cacheWords, instancesOfStringsNotInCacheWordsSorted)
-      ),
-      function(err) {
-        if (err) throw err;
-      }
+    preprocessHelpers.storePreProcessedDataInJSONToFile(
+      Object.assign(cacheWords, instancesOfStringsNotInCacheWordsSorted)
     );
   }
+  return searchResults;
+};
+
+const isEmptyObj = (obj) => {
+  for (var x in obj) {
+    return false;
+  }
+  return true;
 };
 
 // This fuctions extracts all possible substrings of words length greater than or equal to 1
 // 1. split the user query at spaces
 
-const getAllSubstringsFromUserQuery = userQuery => {
+const getAllSubstringsFromUserQuery = (userQuery) => {
   userQuery = removeSpecialCharacters(userQuery);
   let oneWordUserQueryList = userQuery.split(' ');
   let oneWordUserQueryListLength = oneWordUserQueryList.length;
   let i = 0;
+  let userQuerySubStrings = [];
   while (i < oneWordUserQueryListLength) {
     let j = i;
     while (j < oneWordUserQueryListLength) {
       let substr = '';
       let substrRange = range(i, j + 1);
-      substrRange.forEach(item => {
+      substrRange.forEach((item) => {
         substr += oneWordUserQueryList[item] + ' ';
       });
       substr = substr.trim();
@@ -184,6 +198,7 @@ const getAllSubstringsFromUserQuery = userQuery => {
     }
     i++;
   }
+  return userQuerySubStrings;
 };
 
-searchSummaries('achieve', 3);
+module.exports = { searchSummaries };

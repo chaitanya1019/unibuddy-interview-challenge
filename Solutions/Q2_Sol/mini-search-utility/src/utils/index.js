@@ -1,5 +1,6 @@
 // import { writeFile } from 'fs';
 import { preprocess, sortPreProcessedDataInstances } from './preprocess.js';
+import { writeFile } from 'fs';
 
 import rawData from './data.json';
 import cacheData from './cache.json';
@@ -38,18 +39,18 @@ export const searchSummaries = (userQuery, numberOfResults) => {
   }
 };
 
-const removeSpecialCharacters = str => {
+const removeSpecialCharacters = (str) => {
   return str.replace(/[^a-zA-Z ]/g, '');
 };
 
-const convertToLowercase = input => {
+const convertToLowercase = (input) => {
   return input.toLowerCase();
 };
 
 const range = (start, end) =>
   Array.from({ length: end - start }, (v, k) => k + start);
 
-const trimAdditionalSpacesFromString = str => {
+const trimAdditionalSpacesFromString = (str) => {
   return str.trim();
 };
 
@@ -65,13 +66,13 @@ const calculateInstancesOfQuerySubstringsInSummaries = (
 
   let allSubstringsInstances = {};
 
-  querySubstrings.forEach(str => {
+  querySubstrings.forEach((str) => {
     let lowercaseString = convertToLowercase(str);
     if (!cacheWords.hasOwnProperty(lowercaseString)) {
       console.log('reading from data file');
 
       let frequencyOfUserQuerySubstringInASummary;
-      allSummaries.forEach(summaryObj => {
+      allSummaries.forEach((summaryObj) => {
         let currStateOfUserQuerySubstringInstance = {};
         let totalFrequency, totalInstances;
 
@@ -99,7 +100,7 @@ const calculateInstancesOfQuerySubstringsInSummaries = (
           instances: currStateOfUserQuerySubstringInstance,
           totalFrequency,
           totalInstances,
-          rank: totalFrequency === 0 ? -1 : lowercaseString.split(' ').length
+          rank: totalFrequency === 0 ? -1 : lowercaseString.split(' ').length,
         };
       });
     } else {
@@ -115,7 +116,7 @@ const calculateInstancesOfQuerySubstringsInSummaries = (
 
     allSubstringsInstances = {
       ...cacheWordsInstances,
-      ...instancesOfStringsNotInCacheWordsSorted
+      ...instancesOfStringsNotInCacheWordsSorted,
     };
   } else {
     allSubstringsInstances = { ...cacheWordsInstances };
@@ -125,7 +126,7 @@ const calculateInstancesOfQuerySubstringsInSummaries = (
     Object.entries(allSubstringsInstances)
   );
 
-  allSubstringsInstancesMap[Symbol.iterator] = function*() {
+  allSubstringsInstancesMap[Symbol.iterator] = function* () {
     yield* [...this.entries()].sort(
       (a, b) =>
         b[1].rank - a[1].rank ||
@@ -144,14 +145,14 @@ const calculateInstancesOfQuerySubstringsInSummaries = (
       for (let k = 0; k < 1; k++) {
         if (
           !searchResults.some(
-            summary => summary['id'] == value['instances'][j][k]
+            (summary) => summary['id'] == value['instances'][j][k]
           )
         ) {
           searchResults.push({
             id: allSummaries[value['instances'][j][k]]['id'],
             summary: allSummaries[value['instances'][j][k]]['summary'],
             title: allTitles[value['instances'][j][k]],
-            author: allAuthors[value['instances'][j][k]]['author']
+            author: allAuthors[value['instances'][j][k]]['author'],
           });
         }
       }
@@ -159,16 +160,16 @@ const calculateInstancesOfQuerySubstringsInSummaries = (
   }
 
   if (instancesOfStringsNotInCacheWords) {
-    //add unsaved data of instancesOfStringsNotInCacheWordsSorted to cache.json
-    // writeFile(
-    //   'cache.json',
-    //   JSON.stringify(
-    //     Object.assign(cacheWords, instancesOfStringsNotInCacheWordsSorted)
-    //   ),
-    //   function(err) {
-    //     if (err) throw err;
-    //   }
-    // );
+    // add unsaved data of instancesOfStringsNotInCacheWordsSorted to cache.json
+    writeFile(
+      'cache.json',
+      JSON.stringify(
+        Object.assign(cacheWords, instancesOfStringsNotInCacheWordsSorted)
+      ),
+      function (err) {
+        if (err) throw err;
+      }
+    );
   }
 
   return searchResults;
@@ -177,7 +178,7 @@ const calculateInstancesOfQuerySubstringsInSummaries = (
 // This fuctions extracts all possible substrings of words length greater than or equal to 1
 // 1. split the user query at spaces
 
-const getAllSubstringsFromUserQuery = userQuery => {
+const getAllSubstringsFromUserQuery = (userQuery) => {
   userQuery = removeSpecialCharacters(userQuery);
   let oneWordUserQueryList = userQuery.split(' ');
   let oneWordUserQueryListLength = oneWordUserQueryList.length;
@@ -188,7 +189,7 @@ const getAllSubstringsFromUserQuery = userQuery => {
     while (j < oneWordUserQueryListLength) {
       let substr = '';
       let substrRange = range(i, j + 1);
-      substrRange.forEach(item => {
+      substrRange.forEach((item) => {
         substr += oneWordUserQueryList[item] + ' ';
       });
       substr = trimAdditionalSpacesFromString(substr);

@@ -200,7 +200,6 @@ ul.search-bar__suggestions li.active {
   color: #5e5e5e;
   padding: 0.4rem;
   text-decoration: none;
-  text-transform: capitalize;
   -webkit-transition: 0.1s all ease;
   transition: 0.1s all ease;
 }

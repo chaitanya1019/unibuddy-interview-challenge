@@ -2,13 +2,16 @@ import React, { useState, Fragment } from 'react';
 import { searchSummaries } from '../utils/index.js';
 import SelectedBooks from './SelectedBooks.js';
 
-function AutoComplete(props) {
+const RECENT_SEARCHES_MAX_LENGTH = 10;
+
+function AutoComplete() {
   const [searchTxt, setSearchTxt] = useState('');
   const [activeSuggestion, setActiveSuggestion] = useState(0);
   const [suggestions, setSuggestions] = useState([]);
   const [showSuggestions, setShowSuggestions] = useState(false);
   const [selectedSuggestion, setSelectedSuggestion] = useState({});
   const [selectedBooks, setSelectedBooks] = useState([]);
+  const [recentSearches, setRecentSearches] = useState([]);
 
   const handleSubmit = () => {
     if (searchTxt.trim().length && !isEmpty(selectedSuggestion)) {
@@ -51,8 +54,10 @@ function AutoComplete(props) {
         console.log('enter triggered');
 
         if (suggestions.length && showSuggestions) {
+          handleRecentSearches()
           setActiveSuggestion(0);
           setShowSuggestions(false);
+          
           setSelectedSuggestion(suggestions[activeSuggestion]);
 
           setSearchTxt(suggestions[activeSuggestion]['title']); //set it to title of book
@@ -75,8 +80,18 @@ function AutoComplete(props) {
     }
   };
 
+  function handleRecentSearches() {
+    let recentSearchesClone = [...recentSearches];
+
+    if(recentSearches.length === RECENT_SEARCHES_MAX_LENGTH) {
+      recentSearchesClone.splice(recentSearches.length-1, 1)
+    }
+    setRecentSearches([searchTxt, ...recentSearchesClone])
+  }
+
   function handleSuggestionClick(suggestion, e) {
     console.log('sugg click triggered');
+    handleRecentSearches()
     setActiveSuggestion(0);
     setSuggestions([]);
     setShowSuggestions(false);
@@ -143,13 +158,10 @@ function AutoComplete(props) {
           <h1 class="search__header__title">recent searches</h1>
         </section>
         <div className="recent-search__suggestions">
-          <p>problems</p>
-          <p>problems</p>
-          <p>problems</p>
-          <p>problems</p>
-          <p>problems</p>
-          <p>problems</p>
-          <p>problems</p>
+          {recentSearches.map(searchItem => (
+            <p>{searchItem}</p>
+          ))}
+          
         </div>
       </div>
 
