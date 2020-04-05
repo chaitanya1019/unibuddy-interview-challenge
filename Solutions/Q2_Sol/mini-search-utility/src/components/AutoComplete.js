@@ -10,11 +10,8 @@ function AutoComplete(props) {
   const [selectedSuggestion, setSelectedSuggestion] = useState({});
   const [selectedBooks, setSelectedBooks] = useState([]);
 
-  const handleSubmit = e => {
-    e.preventDefault();
-
-    console.log('submit triggered');
-    if (searchTxt.trim().length) {
+  const handleSubmit = () => {
+    if (searchTxt.trim().length && !isEmpty(selectedSuggestion)) {
       setSelectedBooks([...selectedBooks, selectedSuggestion]);
       setSearchTxt('');
       setActiveSuggestion(0);
@@ -24,7 +21,14 @@ function AutoComplete(props) {
     }
   };
 
-  const onChange = e => {
+  const isEmpty = (obj) => {
+    for (var x in obj) {
+      return false;
+    }
+    return true;
+  };
+
+  const onChange = (e) => {
     const searchTxt = e.target.value;
     setSearchTxt(searchTxt);
     if (searchTxt.trim().length) {
@@ -41,26 +45,38 @@ function AutoComplete(props) {
     console.log(suggestions);
   };
 
-  const onKeyDown = e => {
-    if (e.keyCode === 13) {
-      setActiveSuggestion(0);
-      setShowSuggestions(false);
-      setSearchTxt(suggestions[activeSuggestion]['title']); //set it to title of book
-    } else if (e.keyCode === 38) {
-      if (activeSuggestion === 0) {
-        return;
-      }
-      setActiveSuggestion(activeSuggestion - 1);
-    } else if (e.keyCode === 40) {
-      if (activeSuggestion - 1 === suggestions.length) {
-        return;
-      }
+  const onKeyDown = (e) => {
+    if (e.target.value.trim().length) {
+      if (e.keyCode === 13) {
+        console.log('enter triggered');
 
-      setActiveSuggestion(activeSuggestion + 1);
+        if (suggestions.length && showSuggestions) {
+          setActiveSuggestion(0);
+          setShowSuggestions(false);
+          setSelectedSuggestion(suggestions[activeSuggestion]);
+
+          setSearchTxt(suggestions[activeSuggestion]['title']); //set it to title of book
+        } else {
+          handleSubmit();
+        }
+        // e.preventDefault();
+      } else if (e.keyCode === 38) {
+        if (activeSuggestion === 0) {
+          return;
+        }
+        setActiveSuggestion(activeSuggestion - 1);
+      } else if (e.keyCode === 40) {
+        if (activeSuggestion - 1 === suggestions.length) {
+          return;
+        }
+
+        setActiveSuggestion(activeSuggestion + 1);
+      }
     }
   };
 
   function handleSuggestionClick(suggestion, e) {
+    console.log('sugg click triggered');
     setActiveSuggestion(0);
     setSuggestions([]);
     setShowSuggestions(false);
@@ -72,30 +88,31 @@ function AutoComplete(props) {
     <Fragment>
       <div className="wrap">
         <div className="searchBox">
-          <form onSubmit={handleSubmit}>
-            <div className="search">
-              <input
-                type="text"
-                className={
-                  !showSuggestions
-                    ? 'searchTextBox'
-                    : 'searchTextBox with-suggestions'
-                }
-                onChange={onChange}
-                onKeyDown={onKeyDown}
-                value={searchTxt}
-                placeholder="Search"
-              />
+          <div className="search">
+            <input
+              type="text"
+              className={
+                !showSuggestions
+                  ? 'searchTextBox'
+                  : 'searchTextBox with-suggestions'
+              }
+              onChange={onChange}
+              onKeyDown={onKeyDown}
+              value={searchTxt}
+              placeholder="Search"
+              autoFocus
+              required
+            />
 
-              <input
-                type="submit"
-                value="Add"
-                className={
-                  !showSuggestions ? 'addButton' : 'addButton with-suggestions'
-                }
-              />
-            </div>
-          </form>
+            <button
+              type="button"
+              onClick={handleSubmit}
+              className={
+                !showSuggestions ? 'addButton' : 'addButton with-suggestions'
+              }>
+              Add
+            </button>
+          </div>
         </div>
 
         {showSuggestions && searchTxt && (
@@ -107,7 +124,7 @@ function AutoComplete(props) {
                     <li
                       className={index === activeSuggestion ? 'active' : null}
                       key={suggestion.id}
-                      onClick={e => handleSuggestionClick(suggestion, e)}>
+                      onClick={(e) => handleSuggestionClick(suggestion, e)}>
                       {suggestion.title}
                     </li>
                   );
