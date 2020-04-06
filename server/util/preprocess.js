@@ -1,14 +1,12 @@
-const fs = require('fs');
-const path = require('path');
-const jsondata = JSON.parse(fs.readFileSync(__dirname + '/data.json'));
+const fs = require('fs'); //helper module to read/write files
+const jsondata = JSON.parse(fs.readFileSync(__dirname + '/data.json')); // parsing the json file
 
-let allSummaries = jsondata.summaries;
+let allSummaries = jsondata.summaries; // store summaries array in allSummaries
 
-let preprocessed_unsorted_data = {};
-
+//defined reserved list of words that have low rank of 0
 const lowRank = ['is', 'are', 'in', 'the', 'a', 'of', 'this', 'that', 'your'];
 
-const sortPreProcessedDataInstances = (unsorted_data) => {
+const sortCalculatedSubstringInstances = (unsorted_data) => {
   for (let [key, value] of Object.entries(unsorted_data)) {
     let entries = Object.entries(value['instances']);
     let sorted = entries.sort((a, b) => b[1] - a[1]);
@@ -19,18 +17,19 @@ const sortPreProcessedDataInstances = (unsorted_data) => {
   };
 };
 
-const storePreProcessedDataInJSONToFile = (sorted_data) => {
+const storeCalculatedSubstringInstancesInFile = (sorted_data) => {
   fs.writeFile('./util/cache.json', JSON.stringify(sorted_data), (err) => {
     // In case of a error throw err.
     if (err) throw err;
   });
 };
 
-const processData = (inputStr, bulkProcessing) => {
+const calculateInstancesOfStringsInSummaries = (inputStr, bulkProcessing) => {
+  let preprocessed_unsorted_data = {};
   for (let item of allSummaries) {
     let inputArray;
     if (bulkProcessing) {
-      item['summary'] = item['summary'].replace(/[^a-zA-Z ]/g, '');
+      item['summary'] = item['summary'].replace(/[^a-zA-Z ]/g, ''); //remove special characters
       inputArray = item['summary'].split(' ');
     } else {
       inputArray = inputStr;
@@ -71,18 +70,21 @@ const processData = (inputStr, bulkProcessing) => {
 };
 
 const preprocess = (inputStr, bulkProcessing = true) => {
-  let unsortedData = processData(inputStr, bulkProcessing);
-  let preprocessed_sorted_data = Object.assign(
-    {},
-    sortPreProcessedDataInstances(unsortedData)['sorted_data']
+  let subStringInstancesObj = calculateInstancesOfStringsInSummaries(
+    inputStr,
+    bulkProcessing
   );
-  storePreProcessedDataInJSONToFile(preprocessed_sorted_data);
+  let sortedSubstringInstancesObj = Object.assign(
+    {},
+    sortCalculatedSubstringInstances(subStringInstancesObj)['sorted_data']
+  );
+  storeCalculatedSubstringInstancesInFile(sortedSubstringInstancesObj);
 
-  return preprocessed_sorted_data;
+  return sortedSubstringInstancesObj;
 };
 
 module.exports = {
   preprocess,
-  sortPreProcessedDataInstances,
-  storePreProcessedDataInJSONToFile,
+  sortCalculatedSubstringInstances,
+  storeCalculatedSubstringInstancesInFile,
 };

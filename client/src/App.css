@@ -140,9 +140,12 @@ ul.search-bar__suggestions li.active {
   color: #00b4cc;
 }
 
-.no-suggestions {
+.no-suggestions,
+.searching {
   padding-top: 1rem;
+  padding-left: 1rem;
   padding-bottom: 0.5rem;
+  text-align: left;
 }
 
 .search__header {

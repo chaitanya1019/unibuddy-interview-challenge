@@ -3,7 +3,15 @@ import SelectedBooks from './SelectedBooks.js';
 import axios from 'axios';
 import { debounce } from 'lodash';
 
+// Recent searches can store max of 10 items
 const RECENT_SEARCHES_MAX_LENGTH = 10;
+const BOOK_IMAGES = [
+  'https://images.unsplash.com/photo-1555252586-d77e8c828e41?ixlib=rb-1.2.1&ixid=eyJhcHBfaWQiOjEyMDd9&auto=format&fit=crop&w=751&q=80',
+  'https://images.unsplash.com/photo-1533563672978-98d2cb263ee0?ixlib=rb-1.2.1&ixid=eyJhcHBfaWQiOjEyMDd9&auto=format&fit=crop&w=750&q=80',
+  'https://images.unsplash.com/photo-1549122728-f519709caa9c?ixlib=rb-1.2.1&ixid=eyJhcHBfaWQiOjEyMDd9&auto=format&fit=crop&w=625&q=80',
+  'https://images.unsplash.com/photo-1551300317-58b878a9ff6e?ixlib=rb-1.2.1&ixid=eyJhcHBfaWQiOjEyMDd9&auto=format&fit=crop&w=334&q=80',
+  'https://images.unsplash.com/photo-1569738713551-2958195b458a?ixlib=rb-1.2.1&ixid=eyJhcHBfaWQiOjEyMDd9&auto=format&fit=crop&w=375&q=80',
+];
 
 function AutoComplete() {
   const [searchTxt, setSearchTxt] = useState('');
@@ -15,17 +23,23 @@ function AutoComplete() {
   const [recentSearches, setRecentSearches] = useState([]);
   const [isSearching, setSearching] = useState(false);
 
+  // add selected book to list of selected books
   const handleSubmit = () => {
+    // If search txt is not empty and selectedBook is not empty
     if (searchTxt.trim().length && !isEmpty(selectedSuggestion)) {
-      setSelectedBooks([...selectedBooks, selectedSuggestion]);
-      setSearchTxt('');
-      setActiveSuggestion(0);
-      setShowSuggestions(false);
-      setSelectedSuggestion({});
-      setSuggestions([]);
+      let selectedBook = { ...selectedSuggestion };
+      selectedBook['url'] =
+        BOOK_IMAGES[Math.floor(Math.random() * BOOK_IMAGES.length)];
+      setSelectedBooks([...selectedBooks, selectedBook]); // add selected book to list of books
+      setSearchTxt(''); // reset search txt
+      setActiveSuggestion(0); // reset active suggestion
+      setShowSuggestions(false); // hide suggestions
+      setSelectedSuggestion({}); // reset selected suggestion
+      setSuggestions([]); // reset suggestions
     }
   };
 
+  // check if object is empty
   const isEmpty = (obj) => {
     for (let x in obj) {
       return false;
@@ -33,7 +47,12 @@ function AutoComplete() {
     return true;
   };
 
+  // API call to fetch books matching search data
+  // set active suggestion to the first item in suggestions array
+  // set suggestions to response received from the api in case of success call or empty array if failed
+  // handle searching state to show/hide searching text when api call is made
   const fetchSummaries = async (searchInput) => {
+    setShowSuggestions(true);
     setSearching(true);
     try {
       const response = await axios.get('http://localhost:5001/summaries', {
@@ -44,7 +63,6 @@ function AutoComplete() {
       const suggestions = response.data;
       setSuggestions(suggestions);
       setActiveSuggestion(0);
-      setShowSuggestions(true);
       setSearching(false);
     } catch (error) {
       console.error('Error in fetching summaries');
@@ -55,11 +73,15 @@ function AutoComplete() {
     }
   };
 
+  // using debounce from lodash library to delay the rate at which api calls are made
   const handleFetchSummries = useCallback(
     debounce((q) => fetchSummaries(q), 1000),
     []
   );
 
+  //when text input is changed..
+  // -if input is not empty call handleFetchSummaries fn
+  // -if input is empty disable suggestions and clear suggestions list
   const onChange = (e) => {
     const searchTxt = e.target.value;
     setSearchTxt(searchTxt);
@@ -71,55 +93,67 @@ function AutoComplete() {
     }
   };
 
+  // Handle key events such as enter, up arrow and down arrow keys in input text
   const onKeyDown = (e) => {
+    // if search txt is not empty
     if (e.target.value.trim().length) {
       if (e.keyCode === 13) {
+        // enter button clicked
         console.log('enter triggered');
-
         if (suggestions.length && showSuggestions) {
-          handleRecentSearches();
-          setActiveSuggestion(0);
-          setShowSuggestions(false);
+          // if suggestions is not empty and suggestions are displayed
+          handleRecentSearches(); // add search txt to recent searches
+          setActiveSuggestion(0); // reset active suggestion to 0
+          setShowSuggestions(false); // hide suggestions
 
-          setSelectedSuggestion(suggestions[activeSuggestion]);
+          setSelectedSuggestion(suggestions[activeSuggestion]); // set selected book
 
           setSearchTxt(suggestions[activeSuggestion]['title']); //set it to title of book
         } else {
-          handleSubmit();
+          // a book is selected from list of available suggestion
+          handleSubmit(); // add selected book to selectedBooks
         }
-        // e.preventDefault();
       } else if (e.keyCode === 38) {
+        // up arrow clicked
+        //active suggestion is pointing to first element in list of suggestions
         if (activeSuggestion === 0) {
-          return;
+          return; // no changes
         }
-        setActiveSuggestion(activeSuggestion - 1);
+        // active suggestion is not pointing to first element in list of suggestions
+        setActiveSuggestion(activeSuggestion - 1); // point to element before it
       } else if (e.keyCode === 40) {
-        if (activeSuggestion - 1 === suggestions.length) {
-          return;
-        }
+        // down arrow clicked
 
-        setActiveSuggestion(activeSuggestion + 1);
+        //active suggestion is pointing to first element in list of suggestions
+        if (activeSuggestion === suggestions.length - 1) {
+          return; //no changes
+        }
+        // active suggestion is not pointing to lasr element in list of suggestions
+
+        setActiveSuggestion(activeSuggestion + 1); // point to element after it
       }
     }
   };
 
+  //manage recent searches
   function handleRecentSearches() {
-    let recentSearchesClone = [...recentSearches];
+    let recentSearchesClone = [...recentSearches]; // clone recentSearches state
 
     if (recentSearches.length === RECENT_SEARCHES_MAX_LENGTH) {
-      recentSearchesClone.splice(recentSearches.length - 1, 1);
+      // check if recent searches reached it's max value
+      recentSearchesClone.pop(); // remove the last element
     }
-    setRecentSearches([searchTxt, ...recentSearchesClone]);
+    setRecentSearches([searchTxt, ...recentSearchesClone]); // add latest search txt to list
   }
 
+  // manage when suggestions are clicked
   function handleSuggestionClick(suggestion, e) {
-    console.log('sugg click triggered');
-    handleRecentSearches();
-    setActiveSuggestion(0);
-    setSuggestions([]);
-    setShowSuggestions(false);
-    setSearchTxt(e.currentTarget.innerText);
-    setSelectedSuggestion(suggestion);
+    handleRecentSearches(); // add txt to recent searches
+    setActiveSuggestion(0); // reset active suggestion
+    setSuggestions([]); // reset suggestions
+    setShowSuggestions(false); // hide suggestions
+    setSearchTxt(e.currentTarget.innerText); //set search txt to title of suggestion
+    setSelectedSuggestion(suggestion); // set selected suggestion
   }
 
   return (
@@ -141,6 +175,7 @@ function AutoComplete() {
             />
 
             <button
+              data-testid="add-book__button"
               type="button"
               onClick={handleSubmit}
               className={
@@ -156,12 +191,12 @@ function AutoComplete() {
                   width="32px"
                   xmlSpace="preserve"
                   xmlns="http://www.w3.org/2000/svg"
-                  xmlnsCc="http://creativecommons.org/ns#"
-                  xmlnsDc="http://purl.org/dc/elements/1.1/"
-                  xmlnsInkscape="http://www.inkscape.org/namespaces/inkscape"
-                  xmlnsRdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#"
-                  xmlnsSodipodi="http://sodipodi.sourceforge.net/DTD/sodipodi-0.dtd"
-                  xmlnsSvg="http://www.w3.org/2000/svg">
+                  xmlnscc="http://creativecommons.org/ns#"
+                  xmlnsdc="http://purl.org/dc/elements/1.1/"
+                  xmlnsinkscape="http://www.inkscape.org/namespaces/inkscape"
+                  xmlnsrdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#"
+                  xmlnssodipodi="http://sodipodi.sourceforge.net/DTD/sodipodi-0.dtd"
+                  xmlnssvg="http://www.w3.org/2000/svg">
                   <g id="background">
                     <rect fill="none" height="32" width="32" />
                   </g>
@@ -178,7 +213,9 @@ function AutoComplete() {
 
           {showSuggestions && searchTxt && (
             <div className="search-bar__dropdown">
-              {suggestions.length ? (
+              {isSearching ? (
+                <div className="searching">Searching...</div>
+              ) : suggestions.length ? (
                 <ul className="search-bar__suggestions">
                   {suggestions.map((suggestion, index) => {
                     return (
@@ -205,7 +242,7 @@ function AutoComplete() {
         </section>
         <div className="recent-search__suggestions">
           {recentSearches.map((searchItem) => (
-            <p>{searchItem}</p>
+            <p key={searchItem}>{searchItem}</p>
           ))}
         </div>
       </div>
