@@ -13,8 +13,6 @@ else {
   cacheWords = preprocessHelpers.preprocess();
 }
 
-console.log(cacheWords);
-
 let allSummaries = jsonData.summaries;
 let allTitles = jsonData.titles;
 let allAuthors = jsonData.authors;
@@ -24,7 +22,6 @@ const trimAdditionalSpacesFromString = (str) => {
 };
 
 const searchSummaries = (userQuery, numberOfResults) => {
-  console.log('in search summary fn', userQuery, numberOfResults);
   // check if query is emmpty or numberOfResults is less than or equal to zero
   if (userQuery === '' || numberOfResults <= 0) {
     // return empty data
@@ -157,7 +154,6 @@ const calculateInstancesOfQuerySubstringsInSummaries = (
     }
   }
 
-  console.log(instancesOfStringsNotInCacheWords);
   if (!isEmptyObj(instancesOfStringsNotInCacheWords)) {
     console.log('wrtiting data');
     //add unsaved data of instancesOfStringsNotInCacheWordsSorted to cache.json

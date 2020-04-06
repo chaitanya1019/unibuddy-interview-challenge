@@ -140,8 +140,9 @@ ul.search-bar__suggestions li.active {
   color: #00b4cc;
 }
 
-.no-options {
-  color: white;
+.no-suggestions {
+  padding-top: 1rem;
+  padding-bottom: 0.5rem;
 }
 
 .search__header {
@@ -173,7 +174,6 @@ ul.search-bar__suggestions li.active {
   white-space: nowrap;
   -webkit-overflow-scrolling: touch;
   overflow-x: auto;
-  padding-top: 1rem;
   padding-bottom: 1rem;
   scrollbar-width: none;
 }

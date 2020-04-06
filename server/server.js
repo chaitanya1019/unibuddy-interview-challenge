@@ -1,10 +1,12 @@
 const express = require('express');
+const cors = require('cors')
 const utilHelper = require('./util/helper.js');
 
 const app = express();
 
 // Init Middleware
 app.use(express.json({ extended: false }));
+app.use(cors())
 
 app.get('/summaries', (req, res) => {
   const searchTxt = req.query.search;
