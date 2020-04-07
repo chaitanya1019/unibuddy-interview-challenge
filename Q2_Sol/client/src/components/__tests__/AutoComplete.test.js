@@ -7,17 +7,17 @@ import AutoComplete from '../AutoComplete';
 afterEach(cleanup);
 
 it('renders input box and button', () => {
-  const { queryByTestId, queryByPlaceholderText } = render(<AutoComplete />);
+  const { queryByTestId } = render(<AutoComplete />);
 
   expect(queryByTestId('add-book__button')).toBeTruthy();
-  expect(queryByPlaceholderText('Search')).toBeTruthy();
+  expect(queryByTestId('summary-input')).toBeTruthy();
 });
 
 describe('Input value', () => {
   describe('on change', () => {
     it('updates on change', () => {
-      const { queryByPlaceholderText } = render(<AutoComplete />);
-      const searchInput = queryByPlaceholderText('Search');
+      const { queryByTestId } = render(<AutoComplete />);
+      const searchInput = queryByTestId('summary-input');
 
       fireEvent.change(searchInput, { target: { value: 'test' } });
 

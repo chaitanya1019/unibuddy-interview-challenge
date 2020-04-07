@@ -165,7 +165,7 @@ function AutoComplete() {
           />
         </div>
         <section className="hero__content hero__content--centered">
-          <h1 class="hero__title">
+          <h1 className="hero__title">
             Awesome power Of knowledge, right at your fingertips!
           </h1>
         </section>
@@ -176,11 +176,12 @@ function AutoComplete() {
             }>
             <div className="search-bar__container">
               <input
+                data-testid="summary-input"
                 type="text"
                 onChange={onChange}
                 onKeyDown={onKeyDown}
                 value={searchTxt}
-                placeholder="Search"
+                placeholder="Enter Book Summary"
                 autoFocus
                 required
               />
