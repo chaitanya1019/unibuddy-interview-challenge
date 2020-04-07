@@ -28,3 +28,8 @@ run command *node search.js* in terminal
 # Q2 Note:
 For Q2 the above search function is used as helper method to return the data from nodejs server and a few modifications were made
 To fetch the matching data for user query: An API call is made /summaries endpoint with query text as query params and response is received in json format
+
+Improvisation:
+1) Tokenizing the words in a better way by handling special characters too.
+2) search for typos mismatch as well
+3) fiter results based on proximity of words
